@@ -25,7 +25,7 @@
 Run following commands.
 
 ```bash
-wget https://github.com/ononoki1/nginx-http3/releases/latest/download/nginx.deb
+wget https://github.com/th997/nginx-http3/releases/latest/download/nginx.deb
 sudo apt install ./nginx.deb
 ```
 
