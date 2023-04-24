@@ -38,6 +38,7 @@ cmake -GNinja .. > /dev/null 2>&1
 ninja -j$(nproc) > /dev/null 2>&1
 echo Fetch additional dependencies.
 cd ../..
+echo $PWD
 git clone --depth 1 --recursive https://github.com/google/ngx_brotli > /dev/null 2>&1
 git clone --depth 1 https://github.com/leev/ngx_http_geoip2_module > /dev/null 2>&1
 git clone --depth 1 https://github.com/openresty/headers-more-nginx-module > /dev/null 2>&1
