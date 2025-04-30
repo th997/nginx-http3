@@ -1,11 +1,11 @@
 name: build
 on:
   schedule:
-  - cron: '0 1 1 * *'
+    - cron: "0 0 * * *"
   push:
-    branches: [ main ]
-    paths: 
-      - '**.sh'
+    branches: [main]
+    paths:
+      - "**.sh"
       - Dockerfile
   workflow_dispatch:
 jobs:
@@ -14,17 +14,17 @@ jobs:
     name: build
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Build
         uses: ./
       - name: Upload
-        uses: actions/upload-artifact@v3.0.0
+        uses: actions/upload-artifact@v4
         with:
-          name: v5.${{ env.minor }}.${{ env.patch }}
+          name: v8.${{ env.minor }}.${{ env.patch }}
           path: /home/runner/work/_temp/_github_home/nginx.deb
       - name: Update
         if: ${{ env.change }}
-        uses: stefanzweifel/git-auto-commit-action@v4
+        uses: stefanzweifel/git-auto-commit-action@v5
         with:
           commit_message: Update hash and version
       - name: Release
@@ -33,5 +33,5 @@ jobs:
         with:
           files: /home/runner/work/_temp/_github_home/nginx.deb
           body: "SHA256: ${{ env.hash }}"
-          tag_name: v5.${{ env.minor }}.${{ env.patch }}
+          tag_name: v8.${{ env.minor }}.${{ env.patch }}
           generate_release_notes: false

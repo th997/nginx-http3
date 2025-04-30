@@ -1,10 +1,15 @@
 # nginx-http3
 
+## Distribution switch notice
+
+According to [Debian Wiki](https://wiki.debian.org/DebianReleases), Debian bullseye will reach its end-of-life date in July 2024. Therefore, the project will switch to Debian bookworm as the packaging environment in June 2024.
+
+**Update:** already switched on June 25th.
+
 ## Table of Contents
 
 - [Features](#features)
 - [Usage](#usage)
-- [Note](#note)
 - [Removed modules](#removed-modules)
 - [Add modules back](#add-modules-back)
 - [Use in another distribution](#use-in-another-distribution)
@@ -13,11 +18,10 @@
 ## Features
 
 - Based on latest [NGINX](https://hg.nginx.org/nginx) mainline version
-- HTTP/3 and QUIC support, powered by [nginx-quic](https://hg.nginx.org/nginx-quic)
+- HTTP/3 and QUIC support, powered by [quictls](https://github.com/quictls/openssl)
 - Brotli support, powered by [ngx_brotli](https://github.com/google/ngx_brotli)
 - GeoIP2 support, powered by [ngx_http_geoip2_module](https://github.com/leev/ngx_http_geoip2_module)
 - Headers More support, powered by [ngx_headers_more](https://github.com/openresty/headers-more-nginx-module)
-- OCSP stapling support, powered by [this patch](https://github.com/kn007/patch/blob/master/Enable_BoringSSL_OCSP.patch)
 - Remove mountains of useless modules to improve performance
 
 ## Usage
@@ -29,15 +33,9 @@ wget https://github.com/th997/nginx-http3/releases/latest/download/nginx.deb
 sudo apt install ./nginx.deb
 ```
 
-## Note
-
-Due to usage of BoringSSL instead of OpenSSL, some directives may not work, e.g. `ssl_conf_command`. Besides, direct OCSP stapling via `ssl_stapling on; ssl_stapling_verify on;` does not work too. You should use `ssl_stapling on; ssl_stapling_file /path/to/ocsp;`. The OCSP file can be generated via `openssl ocsp -no_nonce -issuer /path/to/intermediate -cert /path/to/cert -url "$(openssl x509 -in /path/to/cert -noout -ocsp_uri)" -respout /path/to/ocsp`.
-
-If you really need these directives, you should consider [nginx-quictls](https://github.com/ononoki1/nginx-quictls).
-
 ## Removed modules
 
-- All modules that are not built by default, except `http_ssl_module`, `http_sub_module` and `http_v2_module`
+- All modules that are not built by default, except `http_ssl_module`, `http_v2_module` and `http_v3_module`
 - `http_access_module`
 - `http_autoindex_module`
 - `http_browser_module`
@@ -65,21 +63,19 @@ For example, if you want to add `http_scgi_module` back, you need to remove `--h
 
 ## Use in another distribution
 
-Fork this repo, enable GitHub Actions, edit `Dockerfile` and `build.sh`, and change `bullseye-slim` to the one you like. Then wait for GitHub Actions to run. After it finishes, you can download from releases.
+Fork this repo, enable GitHub Actions, edit `Dockerfile` and `build.sh`, and change `bookworm` to the one you like. Then wait for GitHub Actions to run. After it finishes, you can download from releases.
 
-For example, if you want to use in Debian bookworm, you need to change `bullseye-slim` to `bookworm-slim` in `Dockerfile`.
+For example, if you want to use in Debian bullseye, you need to change `bookworm` to `bullseye`.
 
-Note: if you are using newer version of Debian (e.g. Debian bookworm or unstable), you can simply use releases from this repo as Debian is backward compatible.
+Note: if you are using newer version of Debian (e.g. Debian trixie or unstable), you can still use releases for Debian bookworm as Debian is backward compatible.
 
 ## Recommended NGINX config
 
 ```nginx
 http {
   brotli on;
-  brotli_types application/atom+xml application/javascript application/json application/rss+xml application/vnd.ms-fontobject application/x-font-opentype application/x-font-truetype application/x-font-ttf application/x-javascript application/xhtml+xml application/xml font/eot font/opentype font/otf font/truetype image/svg+xml image/vnd.microsoft.icon image/x-icon image/x-win-bitmap text/css text/javascript text/plain text/xml;
   gzip on;
-  gzip_comp_level 6;
-  gzip_types application/atom+xml application/javascript application/json application/rss+xml application/vnd.ms-fontobject application/x-font-opentype application/x-font-truetype application/x-font-ttf application/x-javascript application/xhtml+xml application/xml font/eot font/opentype font/otf font/truetype image/svg+xml image/vnd.microsoft.icon image/x-icon image/x-win-bitmap text/css text/javascript text/plain text/xml;
+  http2 on;
   http3 on;
   quic_gso on;
   quic_retry on;
@@ -90,14 +86,16 @@ http {
   ssl_protocols TLSv1.2 TLSv1.3;
   ssl_session_cache shared:SSL:10m;
   ssl_session_timeout 1d;
+  ssl_stapling on;
+  ssl_stapling_verify on;
   server {
     listen 80 reuseport;
     listen [::]:80 reuseport; # delete if ipv6 is unavailable
     return 444;
   }
   server {
-    listen 443 reuseport ssl http2;
-    listen [::]:443 reuseport ssl http2;
+    listen 443 reuseport ssl;
+    listen [::]:443 reuseport ssl;
     listen 443 reuseport quic;
     listen [::]:443 reuseport quic;
     ssl_reject_handshake on;
