@@ -1,5 +1,5 @@
 set -e
-cd /github/home
+cd "$(dirname "$0")"
 echo Install dependencies.
 echo deb http://deb.debian.org/debian bullseye-backports main >> /etc/apt/sources.list
 apt-get update > /dev/null 2>&1

@@ -25,7 +25,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: nginx-amd64-v8.${{ env.minor }}.${{ env.patch }}
-          path: nginx.deb
+          path: /home/runner/work/_temp/_github_home/nginx.deb
 
       - name: Update
         if: ${{ env.change }}
@@ -37,7 +37,7 @@ jobs:
         if: ${{ env.change }}
         uses: softprops/action-gh-release@v1
         with:
-          files: nginx.deb
+          files: /home/runner/work/_temp/_github_home/nginx.deb
           body: "SHA256: ${{ env.hash }}"
           tag_name: v8.${{ env.minor }}.${{ env.patch }}
           generate_release_notes: false
